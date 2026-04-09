@@ -292,6 +292,22 @@ class SupabaseService {
   }
 
   // ============================================
+  // REGISTRO (auto-registro desde login)
+  // ============================================
+
+  Future<AuthResponse> signUp(String email, String password) async {
+    return await client.auth.signUp(email: email, password: password);
+  }
+
+  Future<Map<String, dynamic>> registrarUsuario(String nombre, String rol) async {
+    final data = await client.rpc('registrar_usuario', params: {
+      'p_nombre': nombre,
+      'p_rol': rol,
+    });
+    return Map<String, dynamic>.from(data);
+  }
+
+  // ============================================
   // CONSULTORIOS
   // ============================================
 

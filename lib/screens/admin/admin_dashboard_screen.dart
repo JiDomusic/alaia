@@ -9,6 +9,7 @@ import 'tabs/caja_tab.dart';
 import 'tabs/zonas_tab.dart';
 import 'tabs/horarios_tab.dart';
 import 'tabs/bloqueos_tab.dart';
+import 'tabs/promos_tab.dart';
 import 'tabs/config_tab.dart';
 
 class AdminDashboardScreen extends StatefulWidget {
@@ -32,6 +33,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> with Single
     if (_svc.isSuperAdmin) {
       tabs.addAll([
         _TabInfo('Caja', Icons.point_of_sale, const CajaTab()),
+        _TabInfo('Promos', Icons.local_offer, const PromosTab()),
         _TabInfo('Zonas', Icons.flash_on, const ZonasTab()),
         _TabInfo('Horarios', Icons.schedule, const HorariosTab()),
         _TabInfo('Bloqueos', Icons.block, const BloqueosTab()),

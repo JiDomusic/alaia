@@ -31,13 +31,12 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
   Future<void> _inicializar() async {
     try {
       setState(() => _estado = 'Conectando...');
-      // Verificar conexion cargando configuracion
-      await SupabaseService.instance.loadConfiguracion();
+      final config = await SupabaseService.instance.loadConfiguracion();
       setState(() => _estado = 'Listo');
       await Future.delayed(const Duration(milliseconds: 800));
       if (mounted) {
         Navigator.of(context).pushReplacement(
-          MaterialPageRoute(builder: (_) => const HomeScreen()),
+          MaterialPageRoute(builder: (_) => HomeScreen(config: config)),
         );
       }
     } catch (e) {
@@ -68,16 +67,6 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
                   fontWeight: FontWeight.bold,
                   color: AppConfig.colorSecundario,
                   letterSpacing: 4,
-                ),
-              ),
-              const SizedBox(height: 8),
-              Text(
-                'DEPILACIÓN DEFINITIVA',
-                style: GoogleFonts.inter(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w300,
-                  color: AppConfig.colorSecundario.withValues(alpha: 0.7),
-                  letterSpacing: 6,
                 ),
               ),
               const SizedBox(height: 40),

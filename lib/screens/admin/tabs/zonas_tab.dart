@@ -40,8 +40,9 @@ class _ZonasTabState extends State<ZonasTab> {
 
   Future<void> _mostrarDialogoZona({Map<String, dynamic>? zona}) async {
     final nombreCtrl = TextEditingController(text: zona?['nombre'] ?? '');
-    final precioCtrl = TextEditingController(text: zona?['precio']?.toString() ?? '0');
-    final duracionCtrl = TextEditingController(text: zona?['duracion_minutos']?.toString() ?? '20');
+    final precioEfCtrl = TextEditingController(text: zona?['precio_efectivo']?.toString() ?? '0');
+    final precioTjCtrl = TextEditingController(text: zona?['precio_tarjeta']?.toString() ?? '0');
+    final duracionCtrl = TextEditingController(text: zona?['duracion_minutos']?.toString() ?? '5');
     final descCtrl = TextEditingController(text: zona?['descripcion'] ?? '');
     bool activa = zona?['activa'] ?? true;
 
@@ -57,7 +58,9 @@ class _ZonasTabState extends State<ZonasTab> {
               children: [
                 TextField(controller: nombreCtrl, decoration: const InputDecoration(labelText: 'Nombre (ej: Axilas, Bozo, Piernas)')),
                 const SizedBox(height: 12),
-                TextField(controller: precioCtrl, keyboardType: TextInputType.number, decoration: const InputDecoration(labelText: 'Precio (\$)')),
+                TextField(controller: precioEfCtrl, keyboardType: TextInputType.number, decoration: const InputDecoration(labelText: 'Precio Efectivo (\$)')),
+                const SizedBox(height: 12),
+                TextField(controller: precioTjCtrl, keyboardType: TextInputType.number, decoration: const InputDecoration(labelText: 'Precio Tarjeta (\$)')),
                 const SizedBox(height: 12),
                 TextField(controller: duracionCtrl, keyboardType: TextInputType.number, decoration: const InputDecoration(labelText: 'Duración (minutos)')),
                 const SizedBox(height: 12),
@@ -78,8 +81,9 @@ class _ZonasTabState extends State<ZonasTab> {
                 if (nombreCtrl.text.isEmpty) return;
                 final data = {
                   'nombre': nombreCtrl.text.trim(),
-                  'precio': double.tryParse(precioCtrl.text) ?? 0,
-                  'duracion_minutos': int.tryParse(duracionCtrl.text) ?? 20,
+                  'precio_efectivo': double.tryParse(precioEfCtrl.text) ?? 0,
+                  'precio_tarjeta': double.tryParse(precioTjCtrl.text) ?? 0,
+                  'duracion_minutos': int.tryParse(duracionCtrl.text) ?? 5,
                   'descripcion': descCtrl.text.trim(),
                   'activa': activa,
                 };
@@ -142,7 +146,7 @@ class _ZonasTabState extends State<ZonasTab> {
                       ),
                     ),
                     subtitle: Text(
-                      '\$${((z['precio'] as num?)?.toDouble() ?? 0).toStringAsFixed(0)} - ${z['duracion_minutos'] ?? 20} min',
+                      'Efvo: \$${((z['precio_efectivo'] as num?)?.toDouble() ?? 0).toStringAsFixed(0)} | Tarj: \$${((z['precio_tarjeta'] as num?)?.toDouble() ?? 0).toStringAsFixed(0)} | ${z['duracion_minutos'] ?? 5} min',
                       style: GoogleFonts.inter(fontSize: 13),
                     ),
                     trailing: IconButton(

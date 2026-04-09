@@ -15,17 +15,40 @@ class _ConfigTabState extends State<ConfigTab> {
   Map<String, dynamic> _config = {};
   bool _cargando = true;
   bool _guardando = false;
+  String _seccionActiva = 'datos';
 
+  // Controladores por sección
+  // Datos
   late TextEditingController _nombreCtrl;
   late TextEditingController _subtituloCtrl;
   late TextEditingController _sloganCtrl;
+  // Contacto
   late TextEditingController _telefonoCtrl;
   late TextEditingController _whatsappCtrl;
   late TextEditingController _emailCtrl;
   late TextEditingController _direccionCtrl;
   late TextEditingController _mapsCtrl;
   late TextEditingController _instagramCtrl;
-  late TextEditingController _bannerCtrl;
+  late TextEditingController _facebookCtrl;
+  late TextEditingController _tiktokCtrl;
+  // Diseño
+  late TextEditingController _logoCtrl;
+  late TextEditingController _bannerImgCtrl;
+  late TextEditingController _bannerVideoCtrl;
+  late TextEditingController _colorPrimarioCtrl;
+  late TextEditingController _colorSecundarioCtrl;
+  late TextEditingController _colorAcentoCtrl;
+  late TextEditingController _colorFondoCtrl;
+  late TextEditingController _colorTextoCtrl;
+  // Textos
+  late TextEditingController _textoHeroCtrl;
+  late TextEditingController _textoCtaCtrl;
+  late TextEditingController _mensajeBienvenidaCtrl;
+
+  String _bannerTipo = 'imagen';
+  bool _mostrarZonas = true;
+  bool _mostrarDescuentos = true;
+  bool _mostrarPrecios = false;
 
   @override
   void initState() {
@@ -39,7 +62,19 @@ class _ConfigTabState extends State<ConfigTab> {
     _direccionCtrl = TextEditingController();
     _mapsCtrl = TextEditingController();
     _instagramCtrl = TextEditingController();
-    _bannerCtrl = TextEditingController();
+    _facebookCtrl = TextEditingController();
+    _tiktokCtrl = TextEditingController();
+    _logoCtrl = TextEditingController();
+    _bannerImgCtrl = TextEditingController();
+    _bannerVideoCtrl = TextEditingController();
+    _colorPrimarioCtrl = TextEditingController();
+    _colorSecundarioCtrl = TextEditingController();
+    _colorAcentoCtrl = TextEditingController();
+    _colorFondoCtrl = TextEditingController();
+    _colorTextoCtrl = TextEditingController();
+    _textoHeroCtrl = TextEditingController();
+    _textoCtaCtrl = TextEditingController();
+    _mensajeBienvenidaCtrl = TextEditingController();
     _cargarConfig();
   }
 
@@ -56,7 +91,23 @@ class _ConfigTabState extends State<ConfigTab> {
       _direccionCtrl.text = _config['direccion'] ?? '';
       _mapsCtrl.text = _config['direccion_maps_url'] ?? '';
       _instagramCtrl.text = _config['instagram'] ?? '';
-      _bannerCtrl.text = _config['banner_imagen_url'] ?? '';
+      _facebookCtrl.text = _config['facebook'] ?? '';
+      _tiktokCtrl.text = _config['tiktok'] ?? '';
+      _logoCtrl.text = _config['logo_url'] ?? '';
+      _bannerImgCtrl.text = _config['banner_imagen_url'] ?? '';
+      _bannerVideoCtrl.text = _config['banner_video_url'] ?? '';
+      _colorPrimarioCtrl.text = _config['color_primario'] ?? '#1A1A1A';
+      _colorSecundarioCtrl.text = _config['color_secundario'] ?? '#E8D5C4';
+      _colorAcentoCtrl.text = _config['color_acento'] ?? '#D4AF37';
+      _colorFondoCtrl.text = _config['color_fondo'] ?? '#F5F0EB';
+      _colorTextoCtrl.text = _config['color_texto'] ?? '#2C2C2C';
+      _textoHeroCtrl.text = _config['texto_hero'] ?? '';
+      _textoCtaCtrl.text = _config['texto_cta'] ?? 'Reservar Turno';
+      _mensajeBienvenidaCtrl.text = _config['mensaje_bienvenida'] ?? '';
+      _bannerTipo = _config['banner_tipo'] ?? 'imagen';
+      _mostrarZonas = _config['mostrar_zonas_publico'] ?? true;
+      _mostrarDescuentos = _config['mostrar_descuentos_publico'] ?? true;
+      _mostrarPrecios = _config['mostrar_precios_publico'] ?? false;
       if (mounted) setState(() => _cargando = false);
     } catch (e) {
       if (mounted) {
@@ -81,7 +132,23 @@ class _ConfigTabState extends State<ConfigTab> {
         'direccion': _direccionCtrl.text.trim(),
         'direccion_maps_url': _mapsCtrl.text.trim(),
         'instagram': _instagramCtrl.text.trim(),
-        'banner_imagen_url': _bannerCtrl.text.trim(),
+        'facebook': _facebookCtrl.text.trim(),
+        'tiktok': _tiktokCtrl.text.trim(),
+        'logo_url': _logoCtrl.text.trim(),
+        'banner_imagen_url': _bannerImgCtrl.text.trim(),
+        'banner_video_url': _bannerVideoCtrl.text.trim(),
+        'banner_tipo': _bannerTipo,
+        'color_primario': _colorPrimarioCtrl.text.trim(),
+        'color_secundario': _colorSecundarioCtrl.text.trim(),
+        'color_acento': _colorAcentoCtrl.text.trim(),
+        'color_fondo': _colorFondoCtrl.text.trim(),
+        'color_texto': _colorTextoCtrl.text.trim(),
+        'texto_hero': _textoHeroCtrl.text.trim(),
+        'texto_cta': _textoCtaCtrl.text.trim(),
+        'mensaje_bienvenida': _mensajeBienvenidaCtrl.text.trim(),
+        'mostrar_zonas_publico': _mostrarZonas,
+        'mostrar_descuentos_publico': _mostrarDescuentos,
+        'mostrar_precios_publico': _mostrarPrecios,
         'onboarding_completed': true,
       });
       if (mounted) {
@@ -100,7 +167,6 @@ class _ConfigTabState extends State<ConfigTab> {
     }
   }
 
-  // Crear usuario admin (operadora o super_admin)
   Future<void> _crearUsuario() async {
     final emailCtrl = TextEditingController();
     final passCtrl = TextEditingController();
@@ -169,53 +235,334 @@ class _ConfigTabState extends State<ConfigTab> {
 
   @override
   Widget build(BuildContext context) {
-    return _cargando
-        ? const Center(child: CircularProgressIndicator())
-        : SingleChildScrollView(
+    if (_cargando) return const Center(child: CircularProgressIndicator());
+
+    return Column(
+      children: [
+        // Navegación de secciones
+        Container(
+          color: Colors.white,
+          padding: const EdgeInsets.symmetric(vertical: 4),
+          child: SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            child: Row(
+              children: [
+                _chipSeccion('datos', 'Datos', Icons.store),
+                _chipSeccion('contacto', 'Contacto', Icons.phone),
+                _chipSeccion('diseno', 'Diseño', Icons.palette),
+                _chipSeccion('banner', 'Banner', Icons.image),
+                _chipSeccion('textos', 'Textos', Icons.text_fields),
+                _chipSeccion('publico', 'Vista Pública', Icons.visibility),
+                _chipSeccion('usuarios', 'Usuarios', Icons.people),
+              ],
+            ),
+          ),
+        ),
+        // Contenido
+        Expanded(
+          child: SingleChildScrollView(
             padding: const EdgeInsets.all(16),
             child: ConstrainedBox(
               constraints: const BoxConstraints(maxWidth: 600),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  Text('Configuración del Centro', style: GoogleFonts.inter(fontSize: 18, fontWeight: FontWeight.w700)),
-                  const SizedBox(height: 24),
-                  _campo('Nombre del centro', _nombreCtrl),
-                  _campo('Subtítulo', _subtituloCtrl),
-                  _campo('Slogan', _sloganCtrl),
-                  _campo('Teléfono', _telefonoCtrl),
-                  _campo('WhatsApp', _whatsappCtrl),
-                  _campo('Email', _emailCtrl),
-                  _campo('Dirección', _direccionCtrl),
-                  _campo('URL Google Maps', _mapsCtrl),
-                  _campo('Instagram (@)', _instagramCtrl),
-                  _campo('URL imagen banner', _bannerCtrl),
-                  const SizedBox(height: 24),
-                  ElevatedButton(
-                    onPressed: _guardando ? null : _guardar,
-                    style: ElevatedButton.styleFrom(
-                      padding: const EdgeInsets.symmetric(vertical: 16),
-                      backgroundColor: AppConfig.colorAcento,
-                      foregroundColor: AppConfig.colorPrimario,
+                  if (_seccionActiva == 'datos') _buildDatos(),
+                  if (_seccionActiva == 'contacto') _buildContacto(),
+                  if (_seccionActiva == 'diseno') _buildDiseno(),
+                  if (_seccionActiva == 'banner') _buildBanner(),
+                  if (_seccionActiva == 'textos') _buildTextos(),
+                  if (_seccionActiva == 'publico') _buildVistaPublica(),
+                  if (_seccionActiva == 'usuarios') _buildUsuarios(),
+                  if (_seccionActiva != 'usuarios') ...[
+                    const SizedBox(height: 32),
+                    ElevatedButton(
+                      onPressed: _guardando ? null : _guardar,
+                      style: ElevatedButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(vertical: 16),
+                        backgroundColor: AppConfig.colorAcento,
+                        foregroundColor: AppConfig.colorPrimario,
+                      ),
+                      child: _guardando
+                          ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2))
+                          : Text('Guardar Configuración', style: GoogleFonts.inter(fontWeight: FontWeight.w600, fontSize: 16)),
                     ),
-                    child: _guardando
-                        ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2))
-                        : Text('Guardar Configuración', style: GoogleFonts.inter(fontWeight: FontWeight.w600)),
-                  ),
-                  const SizedBox(height: 40),
-                  const Divider(),
-                  const SizedBox(height: 16),
-                  Text('Usuarios Admin', style: GoogleFonts.inter(fontSize: 18, fontWeight: FontWeight.w700)),
-                  const SizedBox(height: 12),
-                  ElevatedButton.icon(
-                    onPressed: _crearUsuario,
-                    icon: const Icon(Icons.person_add),
-                    label: const Text('Crear Usuario Admin'),
-                  ),
+                  ],
                 ],
               ),
             ),
-          );
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _chipSeccion(String id, String label, IconData icon) {
+    final activa = _seccionActiva == id;
+    return Padding(
+      padding: const EdgeInsets.only(right: 8),
+      child: FilterChip(
+        selected: activa,
+        label: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(icon, size: 16, color: activa ? AppConfig.colorPrimario : AppConfig.colorTextoClaro),
+            const SizedBox(width: 4),
+            Text(label),
+          ],
+        ),
+        selectedColor: AppConfig.colorAcento.withValues(alpha: 0.2),
+        onSelected: (_) => setState(() => _seccionActiva = id),
+      ),
+    );
+  }
+
+  // === DATOS ===
+  Widget _buildDatos() {
+    return _seccionCard('Datos del Centro', Icons.store, [
+      _campo('Nombre del centro', _nombreCtrl),
+      _campo('Subtítulo', _subtituloCtrl),
+      _campo('Slogan', _sloganCtrl),
+    ]);
+  }
+
+  // === CONTACTO ===
+  Widget _buildContacto() {
+    return _seccionCard('Contacto', Icons.phone, [
+      _campo('Teléfono', _telefonoCtrl),
+      _campo('WhatsApp', _whatsappCtrl),
+      _campo('Email', _emailCtrl),
+      _campo('Dirección', _direccionCtrl),
+      _campo('URL Google Maps', _mapsCtrl),
+      _campo('Instagram (@)', _instagramCtrl),
+      _campo('Facebook', _facebookCtrl),
+      _campo('TikTok (@)', _tiktokCtrl),
+    ]);
+  }
+
+  // === DISEÑO (COLORES) ===
+  Widget _buildDiseno() {
+    return _seccionCard('Diseño y Colores', Icons.palette, [
+      _campo('URL Logo (imagen redonda)', _logoCtrl),
+      if (_logoCtrl.text.isNotEmpty) ...[
+        const SizedBox(height: 8),
+        Center(
+          child: Container(
+            width: 80,
+            height: 80,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              border: Border.all(color: Colors.grey.shade300),
+              image: DecorationImage(
+                image: NetworkImage(_logoCtrl.text),
+                fit: BoxFit.cover,
+              ),
+            ),
+          ),
+        ),
+        const SizedBox(height: 16),
+      ],
+      _colorField('Color Primario (fondo hero)', _colorPrimarioCtrl),
+      _colorField('Color Secundario (textos hero)', _colorSecundarioCtrl),
+      _colorField('Color Acento (botones, dorado)', _colorAcentoCtrl),
+      _colorField('Color Fondo (cuerpo)', _colorFondoCtrl),
+      _colorField('Color Texto', _colorTextoCtrl),
+      const SizedBox(height: 16),
+      Text('Paletas sugeridas:', style: GoogleFonts.inter(fontSize: 13, fontWeight: FontWeight.w600)),
+      const SizedBox(height: 8),
+      Wrap(
+        spacing: 8,
+        runSpacing: 8,
+        children: [
+          _paletaPreset('Elegante Oscura', '#1A1A1A', '#E8D5C4', '#D4AF37', '#F5F0EB', '#2C2C2C'),
+          _paletaPreset('Rosa Premium', '#1A1720', '#E8A0BF', '#D4AF37', '#FFF5F8', '#2C2C2C'),
+          _paletaPreset('Blanco Limpio', '#FFFFFF', '#1A1A1A', '#C9A96E', '#F5F5F5', '#333333'),
+          _paletaPreset('Azul Clínico', '#0D1B2A', '#E0E1DD', '#00B4D8', '#F8F9FA', '#1B263B'),
+        ],
+      ),
+    ]);
+  }
+
+  // === BANNER ===
+  Widget _buildBanner() {
+    return _seccionCard('Banner Hero', Icons.image, [
+      Row(
+        children: [
+          Text('Tipo de banner:', style: GoogleFonts.inter(fontSize: 14)),
+          const SizedBox(width: 16),
+          ChoiceChip(
+            label: const Text('Imagen'),
+            selected: _bannerTipo == 'imagen',
+            onSelected: (_) => setState(() => _bannerTipo = 'imagen'),
+          ),
+          const SizedBox(width: 8),
+          ChoiceChip(
+            label: const Text('Video'),
+            selected: _bannerTipo == 'video',
+            onSelected: (_) => setState(() => _bannerTipo = 'video'),
+          ),
+        ],
+      ),
+      const SizedBox(height: 12),
+      if (_bannerTipo == 'imagen') ...[
+        _campo('URL Imagen Banner', _bannerImgCtrl),
+        if (_bannerImgCtrl.text.isNotEmpty) ...[
+          const SizedBox(height: 8),
+          ClipRRect(
+            borderRadius: BorderRadius.circular(8),
+            child: Image.network(
+              _bannerImgCtrl.text,
+              height: 150,
+              width: double.infinity,
+              fit: BoxFit.cover,
+              errorBuilder: (_, __, ___) => Container(
+                height: 150,
+                color: Colors.grey.shade200,
+                child: const Center(child: Text('Error al cargar imagen')),
+              ),
+            ),
+          ),
+        ],
+      ] else ...[
+        _campo('URL Video Banner (autoplay, muted, loop)', _bannerVideoCtrl),
+        const SizedBox(height: 8),
+        Container(
+          padding: const EdgeInsets.all(12),
+          decoration: BoxDecoration(
+            color: Colors.amber.withValues(alpha: 0.1),
+            borderRadius: BorderRadius.circular(8),
+          ),
+          child: Row(
+            children: [
+              const Icon(Icons.info_outline, size: 16, color: Colors.amber),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Text(
+                  'El video se reproduce automáticamente sin sonido en loop. Usá un link directo al archivo .mp4',
+                  style: GoogleFonts.inter(fontSize: 12),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
+    ]);
+  }
+
+  // === TEXTOS ===
+  Widget _buildTextos() {
+    return _seccionCard('Textos Personalizables', Icons.text_fields, [
+      _campo('Texto hero (debajo del nombre)', _textoHeroCtrl),
+      _campo('Texto botón principal', _textoCtaCtrl),
+      Padding(
+        padding: const EdgeInsets.only(bottom: 16),
+        child: TextField(
+          controller: _mensajeBienvenidaCtrl,
+          maxLines: 4,
+          decoration: const InputDecoration(
+            labelText: 'Mensaje de bienvenida',
+            alignLabelWithHint: true,
+          ),
+        ),
+      ),
+    ]);
+  }
+
+  // === VISTA PUBLICA ===
+  Widget _buildVistaPublica() {
+    return _seccionCard('Vista Pública', Icons.visibility, [
+      SwitchListTile(
+        title: const Text('Mostrar zonas de tratamiento'),
+        subtitle: const Text('Las zonas se ven en la web pública'),
+        value: _mostrarZonas,
+        onChanged: (v) => setState(() => _mostrarZonas = v),
+      ),
+      SwitchListTile(
+        title: const Text('Mostrar descuentos por zonas'),
+        subtitle: const Text('La sección de "2 zonas 15% OFF, etc."'),
+        value: _mostrarDescuentos,
+        onChanged: (v) => setState(() => _mostrarDescuentos = v),
+      ),
+      SwitchListTile(
+        title: const Text('Mostrar precios en público'),
+        subtitle: const Text('Si se muestran los precios de cada zona'),
+        value: _mostrarPrecios,
+        onChanged: (v) => setState(() => _mostrarPrecios = v),
+      ),
+    ]);
+  }
+
+  // === USUARIOS ===
+  Widget _buildUsuarios() {
+    return _seccionCard('Usuarios Admin', Icons.people, [
+      const SizedBox(height: 8),
+      ElevatedButton.icon(
+        onPressed: _crearUsuario,
+        icon: const Icon(Icons.person_add),
+        label: const Text('Crear Usuario Admin'),
+      ),
+      const SizedBox(height: 16),
+      Container(
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          color: Colors.blue.withValues(alpha: 0.05),
+          borderRadius: BorderRadius.circular(8),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text('Roles:', style: GoogleFonts.inter(fontWeight: FontWeight.w700, fontSize: 14)),
+            const SizedBox(height: 8),
+            _rolInfo(Icons.admin_panel_settings, 'Super Admin', 'Ve todo: turnos, pacientes, caja, zonas, promos, horarios, bloqueos, configuración', AppConfig.colorAcento),
+            const SizedBox(height: 8),
+            _rolInfo(Icons.medical_services, 'Operadora', 'Solo ve: turnos (check-in, completar) y pacientes (observaciones). NO ve precios ni caja.', Colors.blue),
+          ],
+        ),
+      ),
+    ]);
+  }
+
+  Widget _rolInfo(IconData icon, String titulo, String desc, Color color) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Icon(icon, size: 20, color: color),
+        const SizedBox(width: 8),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(titulo, style: GoogleFonts.inter(fontWeight: FontWeight.w600, fontSize: 13)),
+              Text(desc, style: GoogleFonts.inter(fontSize: 12, color: AppConfig.colorTextoClaro)),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  // === HELPERS ===
+  Widget _seccionCard(String titulo, IconData icon, List<Widget> children) {
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Icon(icon, color: AppConfig.colorAcento, size: 24),
+                const SizedBox(width: 8),
+                Text(titulo, style: GoogleFonts.inter(fontSize: 18, fontWeight: FontWeight.w700)),
+              ],
+            ),
+            const Divider(height: 24),
+            ...children,
+          ],
+        ),
+      ),
+    );
   }
 
   Widget _campo(String label, TextEditingController ctrl) {
@@ -224,6 +571,86 @@ class _ConfigTabState extends State<ConfigTab> {
       child: TextField(
         controller: ctrl,
         decoration: InputDecoration(labelText: label),
+      ),
+    );
+  }
+
+  Widget _colorField(String label, TextEditingController ctrl) {
+    Color? previewColor;
+    try {
+      previewColor = AppConfig.hexToColor(ctrl.text);
+    } catch (_) {}
+
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 12),
+      child: Row(
+        children: [
+          Container(
+            width: 36,
+            height: 36,
+            decoration: BoxDecoration(
+              color: previewColor ?? Colors.grey,
+              borderRadius: BorderRadius.circular(6),
+              border: Border.all(color: Colors.grey.shade300),
+            ),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: TextField(
+              controller: ctrl,
+              decoration: InputDecoration(
+                labelText: label,
+                hintText: '#1A1A1A',
+                isDense: true,
+              ),
+              onChanged: (_) => setState(() {}),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _paletaPreset(String nombre, String prim, String sec, String acc, String fondo, String texto) {
+    return GestureDetector(
+      onTap: () {
+        setState(() {
+          _colorPrimarioCtrl.text = prim;
+          _colorSecundarioCtrl.text = sec;
+          _colorAcentoCtrl.text = acc;
+          _colorFondoCtrl.text = fondo;
+          _colorTextoCtrl.text = texto;
+        });
+      },
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(6),
+          border: Border.all(color: Colors.grey.shade300),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            _miniColor(prim),
+            _miniColor(sec),
+            _miniColor(acc),
+            const SizedBox(width: 6),
+            Text(nombre, style: GoogleFonts.inter(fontSize: 11)),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _miniColor(String hex) {
+    return Container(
+      width: 16,
+      height: 16,
+      margin: const EdgeInsets.only(right: 3),
+      decoration: BoxDecoration(
+        color: AppConfig.hexToColor(hex),
+        borderRadius: BorderRadius.circular(3),
+        border: Border.all(color: Colors.grey.shade400, width: 0.5),
       ),
     );
   }
@@ -239,7 +666,19 @@ class _ConfigTabState extends State<ConfigTab> {
     _direccionCtrl.dispose();
     _mapsCtrl.dispose();
     _instagramCtrl.dispose();
-    _bannerCtrl.dispose();
+    _facebookCtrl.dispose();
+    _tiktokCtrl.dispose();
+    _logoCtrl.dispose();
+    _bannerImgCtrl.dispose();
+    _bannerVideoCtrl.dispose();
+    _colorPrimarioCtrl.dispose();
+    _colorSecundarioCtrl.dispose();
+    _colorAcentoCtrl.dispose();
+    _colorFondoCtrl.dispose();
+    _colorTextoCtrl.dispose();
+    _textoHeroCtrl.dispose();
+    _textoCtaCtrl.dispose();
+    _mensajeBienvenidaCtrl.dispose();
     super.dispose();
   }
 }

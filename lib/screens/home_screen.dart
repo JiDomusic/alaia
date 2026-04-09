@@ -4,9 +4,11 @@ import 'package:url_launcher/url_launcher.dart';
 import '../config/app_config.dart';
 import '../services/supabase_service.dart';
 import 'admin/admin_login_screen.dart';
+import 'booking/booking_screen.dart';
 
 class HomeScreen extends StatefulWidget {
-  const HomeScreen({super.key});
+  final Map<String, dynamic>? config;
+  const HomeScreen({super.key, this.config});
 
   @override
   State<HomeScreen> createState() => _HomeScreenState();
@@ -14,25 +16,34 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   List<Map<String, dynamic>> _zonas = [];
-  Map<String, dynamic> _config = {};
+  late Map<String, dynamic> _config;
   List<Map<String, dynamic>> _descuentos = [];
   bool _cargando = true;
+
+  // Colores dinámicos del centro
+  Color get _colorPrimario => AppConfig.hexToColor(_config['color_primario'] ?? '#1A1A1A');
+  Color get _colorSecundario => AppConfig.hexToColor(_config['color_secundario'] ?? '#E8D5C4');
+  Color get _colorAcento => AppConfig.hexToColor(_config['color_acento'] ?? '#D4AF37');
+  Color get _colorFondo => AppConfig.hexToColor(_config['color_fondo'] ?? '#F5F0EB');
+  Color get _colorTexto => AppConfig.hexToColor(_config['color_texto'] ?? '#2C2C2C');
 
   @override
   void initState() {
     super.initState();
+    _config = widget.config ?? {};
     _cargarDatos();
   }
 
   Future<void> _cargarDatos() async {
     try {
       final zonas = await SupabaseService.instance.loadZonas();
-      final config = await SupabaseService.instance.loadConfiguracion();
+      if (_config.isEmpty) {
+        _config = await SupabaseService.instance.loadConfiguracion();
+      }
       final descuentos = await SupabaseService.instance.loadDescuentos();
       if (mounted) {
         setState(() {
           _zonas = zonas;
-          _config = config;
           _descuentos = descuentos;
           _cargando = false;
         });
@@ -45,6 +56,12 @@ class _HomeScreenState extends State<HomeScreen> {
   void _irAlAdmin() {
     Navigator.of(context).push(
       MaterialPageRoute(builder: (_) => const AdminLoginScreen()),
+    );
+  }
+
+  void _irAReservar() {
+    Navigator.of(context).push(
+      MaterialPageRoute(builder: (_) => BookingScreen(config: _config)),
     );
   }
 
@@ -90,8 +107,8 @@ class _HomeScreenState extends State<HomeScreen> {
         horizontal: esMovil ? 24 : 80,
         vertical: esMovil ? 60 : 100,
       ),
-      decoration: const BoxDecoration(
-        color: AppConfig.colorPrimario,
+      decoration: BoxDecoration(
+        color: _colorPrimario,
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.center,
@@ -105,7 +122,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 style: GoogleFonts.playfairDisplay(
                   fontSize: 28,
                   fontWeight: FontWeight.bold,
-                  color: AppConfig.colorSecundario,
+                  color: _colorSecundario,
                 ),
               ),
               TextButton.icon(
@@ -113,7 +130,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 icon: const Icon(Icons.lock_outline, size: 16),
                 label: const Text('Admin'),
                 style: TextButton.styleFrom(
-                  foregroundColor: AppConfig.colorSecundario.withValues(alpha: 0.7),
+                  foregroundColor: _colorSecundario.withValues(alpha: 0.7),
                 ),
               ),
             ],
@@ -138,7 +155,7 @@ class _HomeScreenState extends State<HomeScreen> {
             style: GoogleFonts.playfairDisplay(
               fontSize: esMovil ? 36 : 56,
               fontWeight: FontWeight.bold,
-              color: AppConfig.colorSecundario,
+              color: _colorSecundario,
             ),
             textAlign: TextAlign.center,
           ),
@@ -148,7 +165,7 @@ class _HomeScreenState extends State<HomeScreen> {
             style: GoogleFonts.inter(
               fontSize: esMovil ? 12 : 16,
               fontWeight: FontWeight.w300,
-              color: AppConfig.colorSecundario.withValues(alpha: 0.6),
+              color: _colorSecundario.withValues(alpha: 0.6),
               letterSpacing: 6,
             ),
           ),
@@ -160,17 +177,17 @@ class _HomeScreenState extends State<HomeScreen> {
                 _config['slogan'],
                 style: GoogleFonts.inter(
                   fontSize: 16,
-                  color: AppConfig.colorSecundario.withValues(alpha: 0.8),
+                  color: _colorSecundario.withValues(alpha: 0.8),
                 ),
                 textAlign: TextAlign.center,
               ),
             ),
           // CTA - Reservar
           ElevatedButton(
-            onPressed: _abrirWhatsApp,
+            onPressed: _irAReservar,
             style: ElevatedButton.styleFrom(
-              backgroundColor: AppConfig.colorAcento,
-              foregroundColor: AppConfig.colorPrimario,
+              backgroundColor: _colorAcento,
+              foregroundColor: _colorPrimario,
               padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 18),
               textStyle: GoogleFonts.inter(
                 fontSize: 16,
@@ -186,7 +203,7 @@ class _HomeScreenState extends State<HomeScreen> {
             icon: const Icon(Icons.chat_outlined, size: 18),
             label: const Text('Consultanos por WhatsApp'),
             style: TextButton.styleFrom(
-              foregroundColor: AppConfig.colorSecundario.withValues(alpha: 0.7),
+              foregroundColor: _colorSecundario.withValues(alpha: 0.7),
             ),
           ),
         ],
@@ -201,7 +218,7 @@ class _HomeScreenState extends State<HomeScreen> {
         horizontal: esMovil ? 24 : 80,
         vertical: 60,
       ),
-      color: AppConfig.colorFondo,
+      color: _colorFondo,
       child: Column(
         children: [
           Text(
@@ -209,7 +226,7 @@ class _HomeScreenState extends State<HomeScreen> {
             style: GoogleFonts.playfairDisplay(
               fontSize: 28,
               fontWeight: FontWeight.bold,
-              color: AppConfig.colorTexto,
+              color: _colorTexto,
             ),
           ),
           const SizedBox(height: 8),
@@ -217,7 +234,7 @@ class _HomeScreenState extends State<HomeScreen> {
             'Depilación láser de última generación',
             style: GoogleFonts.inter(
               fontSize: 14,
-              color: AppConfig.colorTextoClaro,
+              color: _colorTexto.withValues(alpha: 0.6),
             ),
           ),
           const SizedBox(height: 32),
@@ -245,7 +262,7 @@ class _HomeScreenState extends State<HomeScreen> {
         children: [
           Icon(
             Icons.flash_on,
-            color: AppConfig.colorAcento,
+            color: _colorAcento,
             size: 32,
           ),
           const SizedBox(height: 12),
@@ -254,7 +271,7 @@ class _HomeScreenState extends State<HomeScreen> {
             style: GoogleFonts.inter(
               fontSize: 14,
               fontWeight: FontWeight.w600,
-              color: AppConfig.colorTexto,
+              color: _colorTexto,
             ),
             textAlign: TextAlign.center,
           ),
@@ -264,7 +281,7 @@ class _HomeScreenState extends State<HomeScreen> {
               '${zona['duracion_minutos']} min',
               style: GoogleFonts.inter(
                 fontSize: 12,
-                color: AppConfig.colorTextoClaro,
+                color: _colorTexto.withValues(alpha: 0.6),
               ),
             ),
           ],
@@ -280,7 +297,7 @@ class _HomeScreenState extends State<HomeScreen> {
         horizontal: esMovil ? 24 : 80,
         vertical: 60,
       ),
-      color: AppConfig.colorPrimario,
+      color: _colorPrimario,
       child: Column(
         children: [
           Text(
@@ -288,7 +305,7 @@ class _HomeScreenState extends State<HomeScreen> {
             style: GoogleFonts.playfairDisplay(
               fontSize: 28,
               fontWeight: FontWeight.bold,
-              color: AppConfig.colorSecundario,
+              color: _colorSecundario,
             ),
           ),
           const SizedBox(height: 32),
@@ -303,7 +320,7 @@ class _HomeScreenState extends State<HomeScreen> {
               return Container(
                 padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
                 decoration: BoxDecoration(
-                  border: Border.all(color: AppConfig.colorAcento.withValues(alpha: 0.4)),
+                  border: Border.all(color: _colorAcento.withValues(alpha: 0.4)),
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: Row(
@@ -314,7 +331,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       style: GoogleFonts.inter(
                         fontSize: 16,
                         fontWeight: FontWeight.w500,
-                        color: AppConfig.colorSecundario,
+                        color: _colorSecundario,
                       ),
                     ),
                     const SizedBox(width: 12),
@@ -323,7 +340,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       style: GoogleFonts.inter(
                         fontSize: 18,
                         fontWeight: FontWeight.w700,
-                        color: AppConfig.colorAcento,
+                        color: _colorAcento,
                       ),
                     ),
                   ],
@@ -340,16 +357,16 @@ class _HomeScreenState extends State<HomeScreen> {
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
-      color: AppConfig.colorPrimario,
+      color: _colorPrimario,
       child: Column(
         children: [
-          Divider(color: AppConfig.colorSecundario.withValues(alpha: 0.2)),
+          Divider(color: _colorSecundario.withValues(alpha: 0.2)),
           const SizedBox(height: 16),
           Text(
             'Developed by ${AppConfig.empresa}',
             style: GoogleFonts.inter(
               fontSize: 12,
-              color: AppConfig.colorSecundario.withValues(alpha: 0.4),
+              color: _colorSecundario.withValues(alpha: 0.4),
             ),
           ),
         ],

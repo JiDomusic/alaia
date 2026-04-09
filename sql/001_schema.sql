@@ -231,3 +231,4 @@ CREATE TRIGGER tr_turnos_updated BEFORE UPDATE ON turnos
   FOR EACH ROW EXECUTE FUNCTION update_updated_at();
 CREATE TRIGGER tr_caja_diaria_updated BEFORE UPDATE ON caja_diaria
   FOR EACH ROW EXECUTE FUNCTION update_updated_at();
+

@@ -3,7 +3,11 @@ import 'package:flutter/material.dart';
 class AppConfig {
   // Supabase - keys via --dart-define (nunca hardcoded)
   static const String supabaseUrl = 'https://pgeoxdcrugpbuyipobrr.supabase.co';
-  static const String supabaseAnonKey = String.fromEnvironment('ANON_KEY');
+  // Fallback al valor de build_prod.sh para evitar 401 en dev si faltan defines
+  static const String supabaseAnonKey = String.fromEnvironment(
+    'ANON_KEY',
+    defaultValue: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBnZW94ZGNydWdwYnV5aXBvYnJyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU2ODc4OTcsImV4cCI6MjA5MTI2Mzg5N30.PCxLO2UxsC8zAh6LOJs9wZ4IIX9ZjxoGN7dgBEkS8-Q',
+  );
   static const String supabaseSRK = String.fromEnvironment('SRK');
 
   // Firebase hosting
