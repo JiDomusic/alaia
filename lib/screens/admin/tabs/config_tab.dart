@@ -346,7 +346,7 @@ class _ConfigTabState extends State<ConfigTab> {
   // === UPLOAD HELPER ===
   Future<void> _subirArchivo(String tipo, TextEditingController ctrl, {List<String>? extensiones}) async {
     try {
-      final result = await FilePicker.platform.pickFiles(
+      final result = await FilePicker.pickFiles(
         type: extensiones != null ? FileType.custom : FileType.image,
         allowedExtensions: extensiones,
         withData: true,
