@@ -290,4 +290,78 @@ class SupabaseService {
     });
     return Map<String, dynamic>.from(data);
   }
+
+  // ============================================
+  // CONSULTORIOS
+  // ============================================
+
+  Future<List<Map<String, dynamic>>> loadConsultorios() async {
+    return await client.from('consultorios').select().eq('activo', true).order('orden');
+  }
+
+  // ============================================
+  // PROMOS
+  // ============================================
+
+  Future<List<Map<String, dynamic>>> loadPromos({bool soloActivas = true}) async {
+    var query = client.from('promos').select();
+    if (soloActivas) query = query.eq('activa', true);
+    return await query.order('orden');
+  }
+
+  Future<void> createPromo(Map<String, dynamic> promo) async {
+    await client.from('promos').insert(promo);
+  }
+
+  Future<void> updatePromo(String id, Map<String, dynamic> updates) async {
+    await client.from('promos').update(updates).eq('id', id);
+  }
+
+  Future<void> deletePromo(String id) async {
+    await client.from('promos').delete().eq('id', id);
+  }
+
+  // ============================================
+  // SESIONES POR ZONA POR PACIENTE
+  // ============================================
+
+  Future<List<Map<String, dynamic>>> getSesionesPaciente(String pacienteId) async {
+    final data = await client.rpc('get_sesiones_paciente', params: {'p_paciente_id': pacienteId});
+    return List<Map<String, dynamic>>.from(data.map((e) => Map<String, dynamic>.from(e)));
+  }
+
+  Future<void> incrementarSesionesZona(String pacienteId, List<String> zonasIds) async {
+    await client.rpc('incrementar_sesiones_zona', params: {
+      'p_paciente_id': pacienteId,
+      'p_zonas_ids': zonasIds,
+    });
+  }
+
+  // ============================================
+  // BUSCAR PACIENTE POR TELEFONO
+  // ============================================
+
+  Future<List<Map<String, dynamic>>> buscarPacientePorTelefono(String telefono) async {
+    return await client
+        .from('pacientes')
+        .select()
+        .eq('activo', true)
+        .ilike('telefono', '%$telefono%')
+        .order('nombre')
+        .limit(20);
+  }
+
+  // ============================================
+  // TURNOS POR CONSULTORIO
+  // ============================================
+
+  Future<List<Map<String, dynamic>>> loadTurnosPorFechaConsultorio(DateTime fecha, String consultorioId) async {
+    final fechaStr = '${fecha.year}-${fecha.month.toString().padLeft(2, '0')}-${fecha.day.toString().padLeft(2, '0')}';
+    return await client
+        .from('turnos')
+        .select('*, pacientes(nombre, telefono)')
+        .eq('fecha', fechaStr)
+        .eq('consultorio_id', consultorioId)
+        .order('hora');
+  }
 }
