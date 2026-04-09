@@ -1,3 +1,4 @@
+import 'dart:typed_data';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../config/app_config.dart';
 
@@ -351,6 +352,19 @@ class SupabaseService {
       'p_paciente_id': pacienteId,
       'p_zonas_ids': zonasIds,
     });
+  }
+
+  // ============================================
+  // STORAGE (subir imágenes/videos)
+  // ============================================
+
+  Future<String> uploadFile(String path, Uint8List bytes, String mimeType) async {
+    await client.storage.from('media').uploadBinary(
+      path,
+      bytes,
+      fileOptions: FileOptions(contentType: mimeType, upsert: true),
+    );
+    return client.storage.from('media').getPublicUrl(path);
   }
 
   // ============================================

@@ -1,3 +1,5 @@
+import 'dart:typed_data';
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../../config/app_config.dart';
@@ -341,12 +343,105 @@ class _ConfigTabState extends State<ConfigTab> {
     ]);
   }
 
+  // === UPLOAD HELPER ===
+  Future<void> _subirArchivo(String tipo, TextEditingController ctrl, {List<String>? extensiones}) async {
+    try {
+      final result = await FilePicker.platform.pickFiles(
+        type: extensiones != null ? FileType.custom : FileType.image,
+        allowedExtensions: extensiones,
+        withData: true,
+      );
+      if (result == null || result.files.isEmpty) return;
+
+      final file = result.files.first;
+      final bytes = file.bytes;
+      if (bytes == null) return;
+
+      final ext = file.extension ?? 'jpg';
+      final path = '$tipo/${DateTime.now().millisecondsSinceEpoch}.$ext';
+      final mime = ext == 'mp4' ? 'video/mp4'
+          : ext == 'webm' ? 'video/webm'
+          : ext == 'png' ? 'image/png'
+          : ext == 'webp' ? 'image/webp'
+          : 'image/jpeg';
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Subiendo archivo...')),
+        );
+      }
+
+      final url = await SupabaseService.instance.uploadFile(path, Uint8List.fromList(bytes), mime);
+
+      if (mounted) {
+        setState(() => ctrl.text = url);
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Archivo subido'), backgroundColor: AppConfig.colorExito),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error al subir: $e'), backgroundColor: AppConfig.colorPendiente),
+        );
+      }
+    }
+  }
+
+  Widget _uploadField(String label, TextEditingController ctrl, String tipo, {List<String>? extensiones, bool esVideo = false}) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Expanded(
+                child: TextField(
+                  controller: ctrl,
+                  decoration: InputDecoration(
+                    labelText: label,
+                    hintText: 'URL o subir archivo',
+                  ),
+                  onChanged: (_) => setState(() {}),
+                ),
+              ),
+              const SizedBox(width: 8),
+              ElevatedButton.icon(
+                onPressed: () => _subirArchivo(tipo, ctrl, extensiones: extensiones),
+                icon: Icon(esVideo ? Icons.video_library : Icons.upload, size: 18),
+                label: const Text('Subir'),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppConfig.colorAcento,
+                  foregroundColor: AppConfig.colorPrimario,
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
+                ),
+              ),
+            ],
+          ),
+          if (!esVideo && ctrl.text.isNotEmpty) ...[
+            const SizedBox(height: 8),
+            ClipRRect(
+              borderRadius: BorderRadius.circular(8),
+              child: Image.network(
+                ctrl.text,
+                height: 80,
+                width: 80,
+                fit: BoxFit.cover,
+                errorBuilder: (_, __, ___) => const SizedBox(),
+              ),
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+
   // === DISEÑO (COLORES) ===
   Widget _buildDiseno() {
     return _seccionCard('Diseño y Colores', Icons.palette, [
-      _campo('URL Logo (imagen redonda)', _logoCtrl),
+      _uploadField('Logo (imagen redonda)', _logoCtrl, 'logo'),
       if (_logoCtrl.text.isNotEmpty) ...[
-        const SizedBox(height: 8),
         Center(
           child: Container(
             width: 80,
@@ -406,7 +501,7 @@ class _ConfigTabState extends State<ConfigTab> {
       ),
       const SizedBox(height: 12),
       if (_bannerTipo == 'imagen') ...[
-        _campo('URL Imagen Banner', _bannerImgCtrl),
+        _uploadField('Imagen Banner', _bannerImgCtrl, 'banner'),
         if (_bannerImgCtrl.text.isNotEmpty) ...[
           const SizedBox(height: 8),
           ClipRRect(
@@ -425,7 +520,7 @@ class _ConfigTabState extends State<ConfigTab> {
           ),
         ],
       ] else ...[
-        _campo('URL Video Banner (autoplay, muted, loop)', _bannerVideoCtrl),
+        _uploadField('Video Banner (.mp4)', _bannerVideoCtrl, 'banner', extensiones: ['mp4', 'webm'], esVideo: true),
         const SizedBox(height: 8),
         Container(
           padding: const EdgeInsets.all(12),
